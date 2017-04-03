@@ -1,3 +1,6 @@
 # README #
-Ten tutorial wydaje sie spoko:
+
+https://en.wikibooks.org/wiki/OpenGL_Programming
+
+
 https://learnopengl.com/#!Getting-started/OpenGL
