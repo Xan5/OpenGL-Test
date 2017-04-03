@@ -1,3 +1,3 @@
 # README #
-
-This README would normally document whatever steps are necessary to get your application up and running.
+Ten tutorial wydaje sie spoko:
+https://learnopengl.com/#!Getting-started/OpenGL
