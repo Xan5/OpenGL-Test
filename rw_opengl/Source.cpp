@@ -1,13 +1,11 @@
 #include <iostream>
-
-// GLEW
 #define GLEW_STATIC
 #include <GL/glew.h>
-
-// GLFW
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
-// Other includes
 #include "Shader.h"
 
 // Window dimensions
@@ -16,9 +14,7 @@ const GLuint WIDTH = 800, HEIGHT = 600;
 // The MAIN function, from here we start the application and run the game loop
 int main()
 {
-	// Init GLFW
 	glfwInit();
-
 	// Set all the required options for GLFW
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -28,7 +24,7 @@ int main()
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
 	// Create a GLFWwindow object that we can use for GLFW's functions
-	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", nullptr, nullptr);
+	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Game", nullptr, nullptr);
 
 	int screenWidth, screenHeight;
 	glfwGetFramebufferSize(window, &screenWidth, &screenHeight);
@@ -63,9 +59,14 @@ int main()
 	GLfloat vertices[] =
 	{
 		// Positions         // Colors
-		0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f,  // Bottom Right
-		-0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,  // Bottom Left
-		0.0f,  0.5f, 0.0f,   0.0f, 0.0f, 1.0f   // Top
+		0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f,
+		-0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,
+		-0.5f,  0.5f, 0.0f,   0.0f, 0.0f, 1.0f,
+		0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f,
+		0.5f, -0.5f, 0.5f,   1.0f, 0.0f, 0.0f,
+		-0.5f, -0.5f, 0.5f,   0.0f, 1.0f, 0.0f,
+		-0.5f,  0.5f, 0.5f,   0.0f, 0.0f, 1.0f,
+		0.5f, -0.5f, 0.5f,   1.0f, 0.0f, 0.0f,
 	};
 	GLuint VBO, VAO;
 	glGenVertexArrays(1, &VAO);
@@ -98,8 +99,16 @@ int main()
 
 		// Draw the triangle
 		ourShader.Use();
+
+		glm::mat4 transform;
+		transform = glm::translate(transform, glm::vec3(0.0f, 0.0f, 0.0f));
+		transform = glm::rotate(transform, (GLfloat)glfwGetTime()* -0.5f, glm::vec3(0.0f, 0.0f, 1.0f));
+
+		GLint transformLocation = glGetUniformLocation(ourShader.Program, "transform");
+		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transform));
+
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 3);
 		glBindVertexArray(0);
 
 		// Swap the screen buffers
