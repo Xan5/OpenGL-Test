@@ -51,22 +51,58 @@ int main()
 	// Define the viewport dimensions
 	glViewport(0, 0, screenWidth, screenHeight);
 
+	glEnable(GL_DEPTH_TEST);
+
+	// enable alpha support
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	// Build and compile our shader program
 	Shader ourShader("core.vs", "core.frag");
 
-
 	// Set up vertex data (and buffer(s)) and attribute pointers
-	GLfloat vertices[] =
-	{
-		// Positions         // Colors
-		0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f,
-		-0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,
-		-0.5f,  0.5f, 0.0f,   0.0f, 0.0f, 1.0f,
-		0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f,
-		0.5f, -0.5f, 0.5f,   1.0f, 0.0f, 0.0f,
-		-0.5f, -0.5f, 0.5f,   0.0f, 1.0f, 0.0f,
-		-0.5f,  0.5f, 0.5f,   0.0f, 0.0f, 1.0f,
-		0.5f, -0.5f, 0.5f,   1.0f, 0.0f, 0.0f,
+	GLfloat vertices[] = {
+		-0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+
+		-0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+
+		-0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+
+		-0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
 	};
 	GLuint VBO, VAO;
 	glGenVertexArrays(1, &VAO);
@@ -86,6 +122,9 @@ int main()
 
 	glBindVertexArray(0); // Unbind VAO
 
+	glm::mat4 projection;
+	projection = glm::perspective(45.0f, (GLfloat)screenWidth / (GLfloat)screenHeight, 0.1f, 100.0f);
+	//projection =   glm::ortho(0.0f, ( GLfloat )screenWidth, 0.0f, ( GLfloat )screenHeight, 0.1f, 1000.0f);
 						  // Game loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -95,20 +134,29 @@ int main()
 		// Render
 		// Clear the colorbuffer
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Draw the triangle
 		ourShader.Use();
 
-		glm::mat4 transform;
-		transform = glm::translate(transform, glm::vec3(0.0f, 0.0f, 0.0f));
-		transform = glm::rotate(transform, (GLfloat)glfwGetTime()* -0.5f, glm::vec3(0.0f, 0.0f, 1.0f));
-
-		GLint transformLocation = glGetUniformLocation(ourShader.Program, "transform");
-		glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transform));
+		// Create transformations
+		glm::mat4 model;
+		glm::mat4 view;
+		model = glm::rotate(model, (GLfloat)glfwGetTime() * 1.0f, glm::vec3(0.5f, 1.0f, 0.0f)); // use with perspective projection
+		//model = glm::rotate( model, 0.5f, glm::vec3( 1.0f, 0.0f, 0.0f ) ); // use to compare orthographic and perspective projection
+		//view = glm::translate( view, glm::vec3( screenWidth / 2, screenHeight / 2, -700.0f ) ); // use with orthographic projection
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f)); // use with perspective projection
+																   // Get their uniform location
+		GLint modelLoc = glGetUniformLocation(ourShader.Program, "model");
+		GLint viewLoc = glGetUniformLocation(ourShader.Program, "view");
+		GLint projLoc = glGetUniformLocation(ourShader.Program, "projection");
+		// Pass them to the shaders
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLE_FAN, 0, 3);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
 
 		// Swap the screen buffers
