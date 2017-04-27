@@ -1,4 +1,7 @@
 #include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -8,6 +11,11 @@
 
 #include "Shader.h"
 #include "Camera.h"
+
+using namespace std;
+
+
+int importVerticles(const char* filename, vector<float> &verti);
 
 void keyStatus(GLFWwindow *window, int key, int scancode, int action, int mode);
 void mouseStatus(GLFWwindow *window, double xPos, double yPos);
@@ -67,81 +75,66 @@ int main()
 	Shader lightingShader("lighting.vs", "lighting.frag");
 	Shader lampShader("lamp.vs", "lamp.frag");
 
-	GLfloat vertices[] = {
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-		0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-		0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-		0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-
-		0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-		0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-		0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-		0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-		0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-		0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-		0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-		0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-		0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-		0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-		0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-		0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
-	};
-
+	vector<GLfloat> verticles;
+	int mode = importVerticles("cos.obj", verticles);
 	GLuint VBO, boxVAO, lightVAO;
-	glGenVertexArrays(1, &boxVAO);
+	//glGenVertexArrays(1, &boxVAO);
 	glGenBuffers(1, &VBO);
-	glBindVertexArray(boxVAO);
+	//glBindVertexArray(boxVAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	// Position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *)0);
-	glEnableVertexAttribArray(0);
-	// Normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *)(3* sizeof(GLfloat)));
-	glEnableVertexAttribArray(1);
-	glBindVertexArray(0);
+	glBufferData(GL_ARRAY_BUFFER, verticles.size()* sizeof(GLfloat), &verticles.front(), GL_STATIC_DRAW);
+	
+	if (mode == 4) {
+		// Position attribute
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *)0);
+		glEnableVertexAttribArray(0);
+		// Normal attribute
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *)(3 * sizeof(GLfloat)));
+		glEnableVertexAttribArray(1);
+		glBindVertexArray(0);
+	}else if(mode == 3) {
+		// Position attribute
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *)0);
+		glEnableVertexAttribArray(0);
+		// Texture attribute
+		
 
-	glGenVertexArrays(1, &lightVAO);
-	glBindVertexArray(lightVAO);
+		// Normal attribute
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *)(5 * sizeof(GLfloat)));
+		glEnableVertexAttribArray(1);
+		glBindVertexArray(0);
+	}else if(mode == 2) {
+		// Position attribute
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid *)0);
+		glEnableVertexAttribArray(0);
+		// Texture attribute
+		
 
+	}else if(mode == 1) {
+		// Position attribute
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
+		glEnableVertexAttribArray(0);
+	}else {
+		cout << "ERROR::LOADING::MODEL" << endl;
+		return EXIT_FAILURE;
+	}
+	
+	
+	//glGenVertexArrays(1, &lightVAO);
+	//glBindVertexArray(lightVAO);
+	
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *)0);
-	glEnableVertexAttribArray(0);
-	glBindVertexArray(0);
-
+	
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *)0);
+	//glEnableVertexAttribArray(0);
+	//glBindVertexArray(0);
+	
 	glm::mat4 projection = glm::perspective(45.0f,  (GLfloat)ScreenWidth / (GLfloat)ScreenHeight, 0.1f, 100.0f);
 	
 	// Game loop
 	while (!glfwWindowShouldClose(window))
 	{
-		//lightPos.x -= 0.0001f;
-		//lightPos.z -= 0.0001f;
 
 		GLfloat currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
@@ -173,7 +166,7 @@ int main()
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 		
-		glBindVertexArray(boxVAO);
+		glBindVertexArray(VBO);
 		glm::mat4 model;
 		//model = glm::rotate(model, (GLfloat)glfwGetTime() * 1.0f, glm::vec3(0.5f, 1.0f, 0.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -193,15 +186,15 @@ int main()
 		model = glm::scale(model, glm::vec3(0.2f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-		glBindVertexArray(lightVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(VBO);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
 	}
 
-	glDeleteVertexArrays(1, &boxVAO);
-	glDeleteVertexArrays(1, &lightVAO);
+	//glDeleteVertexArrays(1, &boxVAO);
+	//glDeleteVertexArrays(1, &lightVAO);
 	glDeleteBuffers(1, &VBO);
 
 	glfwTerminate();
@@ -266,4 +259,169 @@ void mouseStatus(GLFWwindow *window, double xPos, double yPos)
 	lastY = yPos;
 
 	camera.processMouseMovement(xOffset, yOffset);
+}
+
+int importVerticles(const char* filename, vector<GLfloat> &verti) {
+		std::ifstream in(filename, ios::in);
+		if (!in)
+		{
+			cout << "Cannot open " << filename << endl; 
+			exit(1);
+		}
+		int mode = 0;
+		vector<glm::vec3> ver;
+		vector<glm::vec3> nor;
+		vector<glm::vec2> tex;
+		int w1, w2, w12, w22, w13, w23;
+		string f1, f2, f3, q1, q2, q12, q22, q13, q23;
+		string line;
+		while (getline(in, line))
+		{
+
+			if (line.substr(0, 2) == "v ")
+			{
+				stringstream s(line.substr(2));
+				glm::vec3 v; s >> v.x; s >> v.y; s >> v.z;
+				ver.push_back(v);
+			}
+			else if (line.substr(0, 2) == "vn")
+			{
+				stringstream s(line.substr(3));
+				glm::vec3 v; s >> v.x; s >> v.y; s >> v.z;
+				nor.push_back(v);
+			}
+			else if (line.substr(0, 2) == "vt")
+			{
+				stringstream s(line.substr(3));
+				glm::vec2 v; s >> v.x; s >> v.y;
+				tex.push_back(v);
+			}
+			else if (line.substr(0, 2) == "f ")
+			{
+				stringstream s(line.substr(2));
+				s >> f1; s >> f2; s >> f3;
+				w1 = f1.find_first_of('/', 0);
+				w12 = f2.find_first_of('/', 0);
+				w13 = f3.find_first_of('/', 0);
+				if (w1 == -1) {
+					mode = 1;
+					verti.push_back(ver[stoi(f1) - 1].x);
+					verti.push_back(ver[stoi(f1) - 1].y);
+					verti.push_back(ver[stoi(f1) - 1].z);
+
+					verti.push_back(ver[stoi(f2) - 1].x);
+					verti.push_back(ver[stoi(f2) - 1].y);
+					verti.push_back(ver[stoi(f2) - 1].z);
+
+					verti.push_back(ver[stoi(f3) - 1].x);
+					verti.push_back(ver[stoi(f3) - 1].y);
+					verti.push_back(ver[stoi(f3) - 1].z);
+				}
+				else {
+					q1 = f1.substr(0, w1);
+					q12 = f2.substr(0, w12);
+					q13 = f3.substr(0, w13);
+					f1 = f1.substr(w1 + 1);
+					f2 = f2.substr(w12 + 1);
+					f3 = f3.substr(w13 + 1);
+					w2 = f1.find_first_of('/', 0);
+					w22 = f2.find_first_of('/', 0);
+					w23 = f3.find_first_of('/', 0);
+					if (w2 == -1) {
+						mode = 2;
+						q2 = f1;
+						q22 = f2;
+						q23 = f3;
+						verti.push_back(ver[stoi(q1) - 1].x);
+						verti.push_back(ver[stoi(q1) - 1].y);
+						verti.push_back(ver[stoi(q1) - 1].z);
+						verti.push_back(tex[stoi(q2) - 1].x);
+						verti.push_back(tex[stoi(q2) - 1].y);
+
+						verti.push_back(ver[stoi(q12) - 1].x);
+						verti.push_back(ver[stoi(q12) - 1].y);
+						verti.push_back(ver[stoi(q12) - 1].z);
+						verti.push_back(tex[stoi(q22) - 1].x);
+						verti.push_back(tex[stoi(q22) - 1].y);
+
+						verti.push_back(ver[stoi(q13) - 1].x);
+						verti.push_back(ver[stoi(q13) - 1].y);
+						verti.push_back(ver[stoi(q13) - 1].z);
+						verti.push_back(tex[stoi(q23) - 1].x);
+						verti.push_back(tex[stoi(q23) - 1].y);
+						
+					}
+					else {
+						if (f1[0] != '/') {
+							mode = 3;
+							q2 = f1.substr(0, w2);
+							q22 = f2.substr(0, w22);
+							q23 = f3.substr(0, w23);
+							f1 = f1.substr(w2+1);
+							f2 = f2.substr(w22+1);
+							f3 = f3.substr(w23+1);
+
+							verti.push_back(ver[stoi(q1) - 1].x);
+							verti.push_back(ver[stoi(q1) - 1].y);
+							verti.push_back(ver[stoi(q1) - 1].z);
+							verti.push_back(tex[stoi(q2) - 1].x);
+							verti.push_back(tex[stoi(q2) - 1].y);
+							verti.push_back(nor[stoi(f1) - 1].x);
+							verti.push_back(nor[stoi(f1) - 1].y);
+							verti.push_back(nor[stoi(f1) - 1].z);
+
+							verti.push_back(ver[stoi(q12) - 1].x);
+							verti.push_back(ver[stoi(q12) - 1].y);
+							verti.push_back(ver[stoi(q12) - 1].z);
+							verti.push_back(tex[stoi(q22) - 1].x);
+							verti.push_back(tex[stoi(q22) - 1].y);
+							verti.push_back(nor[stoi(f2) - 1].x);
+							verti.push_back(nor[stoi(f2) - 1].y);
+							verti.push_back(nor[stoi(f2) - 1].z);
+
+							verti.push_back(ver[stoi(q13) - 1].x);
+							verti.push_back(ver[stoi(q13) - 1].y);
+							verti.push_back(ver[stoi(q13) - 1].z);
+							verti.push_back(tex[stoi(q23) - 1].x);
+							verti.push_back(tex[stoi(q23) - 1].y);
+							verti.push_back(nor[stoi(f3) - 1].x);
+							verti.push_back(nor[stoi(f3) - 1].y);
+							verti.push_back(nor[stoi(f3) - 1].z);
+						}
+						else { 
+							mode = 4;
+							f1 = f1.substr(1);
+							f2 = f2.substr(1);
+							f3 = f3.substr(1);
+
+							verti.push_back(ver[stoi(q1) - 1].x);
+							verti.push_back(ver[stoi(q1) - 1].y);
+							verti.push_back(ver[stoi(q1) - 1].z);
+							verti.push_back(nor[stoi(f1) - 1].x);
+							verti.push_back(nor[stoi(f1) - 1].y);
+							verti.push_back(nor[stoi(f1) - 1].z);
+
+							verti.push_back(ver[stoi(q12) - 1].x);
+							verti.push_back(ver[stoi(q12) - 1].y);
+							verti.push_back(ver[stoi(q12) - 1].z);
+							verti.push_back(nor[stoi(f2) - 1].x);
+							verti.push_back(nor[stoi(f2) - 1].y);
+							verti.push_back(nor[stoi(f2) - 1].z);
+
+							verti.push_back(ver[stoi(q13) - 1].x);
+							verti.push_back(ver[stoi(q13) - 1].y);
+							verti.push_back(ver[stoi(q13) - 1].z);
+							verti.push_back(nor[stoi(f3) - 1].x);
+							verti.push_back(nor[stoi(f3) - 1].y);
+							verti.push_back(nor[stoi(f3) - 1].z);
+						}
+					}
+				}
+			}
+			else if (line[0] == '#')
+			{
+				// ignoring this line
+			}
+		}
+		return mode;
 }
