@@ -12,6 +12,8 @@
 #include "SOIL2/SOIL2.h"
 #include "Shader.h"
 #include "Camera.h"
+#include "HierarchyTree.h"
+
 
 using namespace std;
 
@@ -32,7 +34,7 @@ GLfloat lastY = HEIGHT / 2.0;
 bool keys[1024];
 bool firstMouse = true;
 
-glm::vec3 lightPos(5.0f, 5.0f, 5.0f);
+glm::vec3 lightPos(5.0f, 20.0f, -50.0f);
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
@@ -78,7 +80,7 @@ int main()
 
 	int count=0;
 	vector<GLfloat> verticles;
-	int mode = importOBJ("cos.obj", verticles, count);
+	int mode = importOBJ("drzewo.obj", verticles, count);
 	GLuint VBO, boxVAO, lightVAO;
 	glGenVertexArrays(1, &boxVAO);
 	glGenBuffers(1, &VBO);
@@ -153,7 +155,7 @@ int main()
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 
-	glm::mat4 projection = glm::perspective(45.0f,  (GLfloat)ScreenWidth / (GLfloat)ScreenHeight, 0.1f, 100.0f);
+	glm::mat4 projection = glm::perspective(45.0f,  (GLfloat)ScreenWidth / (GLfloat)ScreenHeight, 0.1f, 1000.0f);
 	// Game loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -194,7 +196,8 @@ int main()
 		
 		glBindVertexArray(boxVAO);
 		glm::mat4 model;
-		//model = glm::rotate(model, (GLfloat)glfwGetTime() * 1.0f, glm::vec3(0.5f, 1.0f, 0.0f));
+		model = glm::translate(model , glm::vec3(0.0f,-1.0f,-100.0f));
+		model = glm::rotate(model, (GLfloat)glfwGetTime() * 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, count);
 		glBindVertexArray(0);
