@@ -2,6 +2,7 @@ class Node {
 public:
 	GLint level;
 	GLfloat x, y;
+	glm::vec3 v;
 	glm::mat4 translation;
 	glm::mat4 rotation;
 	GLboolean object = false;
@@ -21,6 +22,7 @@ public:
 	void makeMats(float angle) {
 		translation = glm::translate(translation, glm::vec3(x, 0.0f, y));
 		rotation = glm::rotate(rotation, angle, glm::vec3(0.0f, 1.0f, 0.0f));
+		v = (glm::vec3(x, 0, y));
 	}
 };
 
@@ -65,14 +67,16 @@ public:
 		else return 0;
 
 	}
-	void renderObjects(Node * node, GLint _modelLoc, GLint _count) {
+	void renderObjects(Node * node, GLint _modelLoc, GLint _count, glm::vec3 camFront, glm::vec3 camPos) {
 		if (node->NW != NULL && node->NE != NULL && node->SW != NULL && node->SE != NULL) {
-			renderObjects(node->NW, _modelLoc, _count);
-			renderObjects(node->NE, _modelLoc, _count);
-			renderObjects(node->SW, _modelLoc, _count);
-			renderObjects(node->SE, _modelLoc, _count);
+			renderObjects(node->NW, _modelLoc, _count, camFront, camPos);
+			renderObjects(node->NE, _modelLoc, _count, camFront, camPos);
+			renderObjects(node->SW, _modelLoc, _count, camFront, camPos);
+			renderObjects(node->SE, _modelLoc, _count, camFront, camPos);
 		}else{
 			if (node->object == 0) return;
+			glm::vec3 treeDir = glm::normalize(camPos - node->v);
+			if (dot(camFront, treeDir) > -0.2) return;
 			glm::mat4 model;
 			model *= node->translation * node->rotation;
 			glUniformMatrix4fv(_modelLoc, 1, GL_FALSE, glm::value_ptr(model));

@@ -163,10 +163,6 @@ int main()
 
 		glfwPollEvents();
 		move();
-	
-		glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
-		glScissor(100, 100, 600, 400);
-		glEnable(GL_SCISSOR_TEST);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -183,7 +179,7 @@ int main()
 		//glUniform3f(objectColorLoc, 1.0f, 1.0f, 1.0f);
 		glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
 		glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
-		glUniform3f(viewPosLoc, camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
+		glUniform3f(viewPosLoc, camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
 		
 		glm::mat4 view;
 		view = camera.getViewMatrix();
@@ -198,7 +194,7 @@ int main()
 		glBindVertexArray(boxVAO);
 
 		Node * node= tree.root;
-		tree.renderObjects(node, modelLoc, count);
+		tree.renderObjects(node, modelLoc, count, camera.getFront(), camera.getPosition());
 
 		glBindVertexArray(0);
 
