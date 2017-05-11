@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <ctime>
 #define GLEW_STATIC
 
 #include <GL/glew.h>
@@ -12,7 +13,7 @@
 #include "SOIL2/SOIL2.h"
 #include "Shader.h"
 #include "Camera.h"
-#include "HierarchyTree.h"
+#include "QuadTree.h"
 
 
 using namespace std;
@@ -28,7 +29,7 @@ const GLuint WIDTH = 800;
 const GLuint HEIGHT = 600;
 int ScreenWidth, ScreenHeight;
 
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 10.0f, 0.0f));
 GLfloat lastX = WIDTH / 2.0;
 GLfloat lastY = HEIGHT / 2.0;
 bool keys[1024];
@@ -41,6 +42,7 @@ GLfloat lastFrame = 0.0f;
 
 int main()
 {
+	srand(time(NULL));
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -72,7 +74,6 @@ int main()
 	}
 
 	glViewport(0, 0, ScreenWidth, ScreenHeight);
-
 	glEnable(GL_DEPTH_TEST);
 
 	Shader lightingShader("lighting.vs", "lighting.frag");
@@ -80,7 +81,7 @@ int main()
 
 	int count=0;
 	vector<GLfloat> verticles;
-	int mode = importOBJ("drzewo.obj", verticles, count);
+	int mode = importOBJ("Dead.obj", verticles, count);
 	GLuint VBO, boxVAO, lightVAO;
 	glGenVertexArrays(1, &boxVAO);
 	glGenBuffers(1, &VBO);
@@ -123,15 +124,11 @@ int main()
 		return EXIT_FAILURE;
 	}
 	
-	
-	glGenVertexArrays(1, &lightVAO);
-	glBindVertexArray(lightVAO);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *)0);
-	glEnableVertexAttribArray(0);
-	glBindVertexArray(0);
+	QuadTree tree(1000.f,9);
+	tree.generateTree(tree.root);
+	for (int i = 0; i < 10000; ++i) {
+		while (tree.addRandomTree()!=1) { }
+	}
 	
 	// Load and create a texture
 	GLuint texture;
@@ -148,7 +145,7 @@ int main()
 	// Load, create texture and generate mipmaps
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	unsigned char *image = SOIL_load_image("tex.jpg", &width, &height, 0, SOIL_LOAD_RGBA);
+	unsigned char *image = SOIL_load_image("tt.jpg", &width, &height, 0, SOIL_LOAD_RGBA);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	SOIL_free_image_data(image);
@@ -166,10 +163,14 @@ int main()
 
 		glfwPollEvents();
 		move();
+	
+		glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+		glScissor(100, 100, 600, 400);
+		glEnable(GL_SCISSOR_TEST);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-
+		
 		lightingShader.Use();
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture);
@@ -195,35 +196,16 @@ int main()
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 		
 		glBindVertexArray(boxVAO);
-		glm::mat4 model;
-		model = glm::translate(model , glm::vec3(0.0f,-1.0f,-100.0f));
-		model = glm::rotate(model, (GLfloat)glfwGetTime() * 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glDrawArrays(GL_TRIANGLES, 0, count);
+
+		Node * node= tree.root;
+		tree.renderObjects(node, modelLoc, count);
+
 		glBindVertexArray(0);
 
-		/*
-		lampShader.Use();
-		modelLoc = glGetUniformLocation(lampShader.Program, "model");
-		viewLoc = glGetUniformLocation(lampShader.Program, "view");
-		projLoc = glGetUniformLocation(lampShader.Program, "projection");
-
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-		model = glm::mat4();
-		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.2f));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-		glBindVertexArray(lightVAO);
-		glDrawArrays(GL_TRIANGLES, 0, count);
-		glBindVertexArray(0);
-		*/
 		glfwSwapBuffers(window);
 	}
 
 	glDeleteVertexArrays(1, &boxVAO);
-	glDeleteVertexArrays(1, &lightVAO);
 	glDeleteBuffers(1, &VBO);
 
 	glfwTerminate();
